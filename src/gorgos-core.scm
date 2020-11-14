@@ -1,12 +1,14 @@
 (define-library (gorgos core)
    (import (scheme base))
-   (export gfail-object? gchar gor glist glist-of)
+   (export gfail-object? gchar gor glist glist-of goptional
+           make-gfail-object gfail)
    (begin
       (define-record-type <gfail-object>
-          (%make-gfail-object)
+          (make-gfail-object)
           gfail-object?)
 
-      (define *gfail-object* (%make-gfail-object))
+      (define *gfail-object* (make-gfail-object))
+      (define gfail *gfail-object*)
 
       (define (gchar c)
         (lambda (input)
@@ -16,6 +18,13 @@
               (if (char=? rchar c)
                   (values c (substring input 1 (string-length input)))
                   (values *gfail-object* input))))))
+
+      (define (goptional parser)
+        (lambda (input)
+           (let-values (((v ne) (parser input)))
+              (if (gfail-object? v)
+                (values '() input)
+                (values v ne)))))
 
       (define (gor . parsers)
         (lambda (input)

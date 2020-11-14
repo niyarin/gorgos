@@ -15,6 +15,16 @@
 
    (test-end "gchar-test"))
 
+(begin;;goptional-test
+   (test-begin "goptional-test")
+   (let-values (((v next) ((goptional (gchar #\t)) "test")))
+      (test-eq v #\t)
+      (test-equal next "est"))
+   (let-values (((v next) ((goptional (gchar #\t)) "hello")))
+      (test-eq v '())
+      (test-equal next "hello"))
+   (test-end "goptional-test"))
+
 (begin;gor-test
    (test-begin "gor-test")
    (let ((parser (gor (gchar #\t) (gchar #\h))))
