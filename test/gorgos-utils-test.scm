@@ -13,3 +13,12 @@
    (let-values (((v next) ((gconst (gchar #\t) 'character-t) "hello")))
       (test-assert (gfail-object? v)))
    (test-end "gconst-test"))
+
+(begin;;gconv-test
+   (test-begin "gconv-test")
+   (let-values (((v next) ((gconv (gchar #\t) char->integer) "test")))
+      (test-eq v (char->integer #\t))
+      (test-equal next "est"))
+   (let-values (((v next) ((gconv (gchar #\t) char->integer) "hello")))
+      (test-assert (gfail-object? v)))
+   (test-end "gconv-test"))
