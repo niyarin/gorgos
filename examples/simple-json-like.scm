@@ -14,18 +14,15 @@
              (gconst (gstring "null") '())))
 
       (define unsigned-integer-parser
-        (gconv (glist (gcharset char-set:digit)
+        (gconv (gpair (gcharset char-set:digit)
                       (glist-of (gcharset char-set:digit)))
-               (lambda (x)
-                 (string->number (list->string (cons (car x) (cadr x)))))))
+               (lambda (x) (string->number (list->string x)))))
 
       (define integer-parser
-        (gconv (glist (goptional (gchar #\-))
+        (gconv (gpair (goptional (gchar #\-))
                       unsigned-integer-parser)
                (lambda (x)
-                 (if (null? x)
-                   (cadr x)
-                   (- (cadr x))))))
+                 (if (null? (car x)) (cdr x) (- (cdr x))))))
 
       (define json-like-parser
         (lambda (x)
