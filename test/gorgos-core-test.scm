@@ -59,3 +59,16 @@
          (test-equal v (string->list "aaa"))
          (test-equal next "b")))
   (test-end "glist-of-test"))
+
+(begin
+  (test-begin "gpair-test")
+  (let-values (((v next) ((gpair (gchar #\t) (gchar #\e)) "test")))
+      (test-equal v (cons #\t #\e))
+      (test-equal next "st"))
+  (let-values (((v next) ((gpair (gchar #\x) (gchar #\e)) "test")))
+      (test-assert (gfail-object? v))
+      (test-equal next "test"))
+  (let-values (((v next) ((gpair (gchar #\t) (gchar #\x)) "test")))
+      (test-assert (gfail-object? v))
+      (test-equal next "test"))
+  (test-end "gpair-test"))

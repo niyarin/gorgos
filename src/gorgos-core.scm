@@ -1,6 +1,6 @@
 (define-library (gorgos core)
    (import (scheme base))
-   (export gfail-object? gchar gor glist glist-of goptional
+   (export gfail-object? gchar gor glist glist-of goptional gpair
            make-gfail-object gfail)
    (begin
       (define-record-type <gfail-object>
@@ -55,4 +55,14 @@
                (if (gfail-object? v)
                  (values (reverse res) ne)
                  (loop ne (cons v res)))))))
+
+      (define (gpair parser1 parser2)
+        (lambda (input)
+          (let-values (((x next1) (parser1 input)))
+            (if (gfail-object? x)
+              (values x input)
+              (let-values (((y next2) (parser2 next1)))
+                  (if (gfail-object? y)
+                    (values y input)
+                    (values (cons x y) next2)))))))
       ))
