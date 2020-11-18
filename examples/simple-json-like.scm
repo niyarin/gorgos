@@ -1,7 +1,7 @@
 (include "../src/gorgos-core.scm")
 (include "../src/gorgos-charset.scm")
-(include "../src/gorgos-advance.scm")
 (include "../src/gorgos-utils.scm")
+(include "../src/gorgos-advance.scm")
 
 (define-library (gorgos-sample simple-json-like)
    (import (scheme base) (scheme charset)
@@ -25,8 +25,7 @@
                  (if (null? (car x)) (cdr x) (- (cdr x))))))
 
       (define json-like-parser
-        (lambda (x)
-           ((gor g-dq-string-parser list-parser json-const integer-parser dict-parser) x)))
+        (gor g-dq-string-parser list-parser json-const integer-parser dict-parser))
 
       (define %dict-pair-parser;xxxx:fooo
          (gconv (glist g-dq-string-parser (gchar #\:) json-like-parser)
@@ -52,7 +51,7 @@
                   (apply vector
                          (cons (cadr x) (map cadr (list-ref x 2)))))))))
 
-;(import (scheme base) (scheme write) (gorgos-sample simple-json-like))
-;(let-values (((value _) (json-like-parser "{\"abc\":[-12,34,\"def\"],\"ghi\":true}")))
-;   (write value);(("\"abc\"" . #(-12 -34 "\"def\"")) ("\"ghi\"" . #t))
-;   (newline))
+(import (scheme base) (scheme write) (gorgos-sample simple-json-like))
+(let-values (((value _) (json-like-parser "{\"abc\":[-12,34,\"def\"],\"ghi\":true}")))
+   (write value);(("\"abc\"" . #(-12 -34 "\"def\"")) ("\"ghi\"" . #t))
+   (newline))

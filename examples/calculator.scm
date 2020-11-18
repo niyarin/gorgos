@@ -1,7 +1,7 @@
 (include "../src/gorgos-core.scm")
 (include "../src/gorgos-charset.scm")
-(include "../src/gorgos-advance.scm")
 (include "../src/gorgos-utils.scm")
+(include "../src/gorgos-advance.scm")
 
 (define-library (gorgos-sample calculator)
    (import (scheme base) (scheme charset)
