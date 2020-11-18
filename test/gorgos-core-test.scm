@@ -11,7 +11,7 @@
       (test-equal next "est"))
 
    (let-values (((v next) ((gchar #\t) "hello")))
-      (test-assert (gfail-object? v)))
+      (test-assert (gfail? v)))
 
    (test-end "gchar-test"))
 
@@ -39,7 +39,7 @@
 
    (let ((parser (gor (gchar #\h) (gchar #\h))))
       (let-values (((v next) (parser "test")))
-         (test-assert (gfail-object? v))))
+         (test-assert (gfail? v))))
    (test-end "gor-test"))
 
 (begin;glist-test
@@ -66,9 +66,9 @@
       (test-equal v (cons #\t #\e))
       (test-equal next "st"))
   (let-values (((v next) ((gpair (gchar #\x) (gchar #\e)) "test")))
-      (test-assert (gfail-object? v))
+      (test-assert (gfail? v))
       (test-equal next "test"))
   (let-values (((v next) ((gpair (gchar #\t) (gchar #\x)) "test")))
-      (test-assert (gfail-object? v))
+      (test-assert (gfail? v))
       (test-equal next "test"))
   (test-end "gpair-test"))

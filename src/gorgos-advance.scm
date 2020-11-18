@@ -8,7 +8,8 @@
           (if (or (< (string-length input) (string-length str))
                   (not (string=? str
                                  (substring input 0 (string-length str)))))
-            (values gfail input)
+            (values (gfail-internal 'no-match input)
+                    input)
             (values str (substring input (string-length str) (string-length input))))))
 
      (define g-dq-string-parser

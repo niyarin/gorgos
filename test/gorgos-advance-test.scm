@@ -16,7 +16,7 @@
          (test-equal v "test")
          (test-equal next "-hello"))
       (let-values (((v next) ((gstring "good") "test-hello2")))
-         (test-assert (gfail-object? v)))
+         (test-assert (gfail? v)))
    (test-end "gstring-test"))
 
 (begin;;g-dq-string-parser-test
@@ -25,5 +25,5 @@
       (test-equal v "\"test\"")
       (test-equal next "hello"))
    (let-values (((v next) (g-dq-string-parser "abc\"test\"hello")))
-      (test-assert (gfail-object? v)))
+      (test-assert (gfail? v)))
    (test-end "g-dq-string-parser-test"))

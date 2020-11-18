@@ -9,7 +9,7 @@
          ((_ (val-s next-s) parser body)
           (lambda (x)
             (let-values (((val-s next-s) (parser x)))
-               (if (gfail-object? val-s)
+               (if (gfail? val-s)
                   (values val-s next-s)
                   (values body next-s)))))))
 
