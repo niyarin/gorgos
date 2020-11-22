@@ -9,28 +9,24 @@
    (export expr-parser)
    (begin
      (define expr-parser
-       (lambda (x)
-         ((gconv (gpair term-parser
+        (gconv (gpair term-parser
                         (goptional (glist (gor (gchar #\+) (gchar #\-)) expr-parser)))
-          (lambda (res)
-            (cond
-              ((null? (cdr res)) (car res))
-              ((eq? (cadr res) #\+) (+ (car res) (list-ref res 2)))
-              ((eq? (cadr res) #\-) (- (car res) (list-ref res 2)))
-              (else res))))
-          x)))
+        (lambda (res)
+          (cond
+            ((null? (cdr res)) (car res))
+            ((eq? (cadr res) #\+) (+ (car res) (list-ref res 2)))
+            ((eq? (cadr res) #\-) (- (car res) (list-ref res 2)))
+            (else res))))
 
      (define term-parser
-       (lambda (x)
-         ((gconv (gpair factor-parser
-                        (goptional (glist (gor (gchar #\*) (gchar #\/)) term-parser)))
-          (lambda (res)
-            (cond
-              ((null? (cdr res)) (car res))
-              ((eq? (cadr res) #\*) (* (car res) (list-ref res 2)))
-              ((eq? (cadr res) #\/) (/ (car res) (list-ref res 2)))
-              (else res))))
-          x)))
+       (gconv (gpair factor-parser
+                     (goptional (glist (gor (gchar #\*) (gchar #\/)) term-parser)))
+              (lambda (res)
+                (cond
+                  ((null? (cdr res)) (car res))
+                  ((eq? (cadr res) #\*) (* (car res) (list-ref res 2)))
+                  ((eq? (cadr res) #\/) (/ (car res) (list-ref res 2)))
+                  (else res)))))
 
      (define unsigned-integer-parser
         (gconv (gpair (gcharset char-set:digit)

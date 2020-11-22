@@ -51,7 +51,7 @@
                   (apply vector
                          (cons (cadr x) (map cadr (list-ref x 2)))))))))
 
-(import (scheme base) (scheme write) (gorgos-sample simple-json-like))
-(let-values (((value _) (json-like-parser "{\"abc\":[-12,34,\"def\"],\"ghi\":true}")))
-   (write value);(("\"abc\"" . #(-12 -34 "\"def\"")) ("\"ghi\"" . #t))
-   (newline))
+;(import (scheme base) (scheme write) (gorgos-sample simple-json-like))
+;(let-values (((value _) (json-like-parser "{\"abc\":[-12,34,\"def\"],\"ghi\":true}")))
+;   (write value);(("\"abc\"" . #(-12 -34 "\"def\"")) ("\"ghi\"" . #t))
+;   (newline))
