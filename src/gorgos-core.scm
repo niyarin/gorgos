@@ -1,6 +1,6 @@
 (define-library (gorgos core)
    (import (scheme base))
-   (export gfail? gchar gor glist glist-of goptional gpair
+   (export gfail? gchar gnot-char gor glist glist-f glist-of goptional gpair
            make-gfail-object gfail g-error-explain
            gfail-internal)
    (begin
@@ -62,6 +62,15 @@
                   (values c (substring input 1 (string-length input)))
                   (values (gfail-internal 'g-unmatch input) input))))))
 
+      (define (gnot-char c);;untested
+        (lambda (input)
+          (if (zero? (string-length input))
+            (values (gfail-internal 'no-input "")  input)
+            (let ((rchar (string-ref input 0)))
+              (if (not (char=? rchar c))
+                  (values rchar (substring input 1 (string-length input)))
+                  (values (gfail-internal 'g-unmatch input) input))))))
+
       (define (goptional parser)
         (lambda (input)
            (let-values (((v ne) (parser input)))
@@ -85,8 +94,7 @@
               (let ((parsers (list _parsers ...)))
                 (%gor input parsers))))))
 
-      (define (glist . parsers)
-        (lambda (input)
+      (define (%glist input parsers)
           (let loop ((ps parsers)
                      (res '())
                      (next input))
@@ -95,7 +103,17 @@
               (let-values (((v ne) ((car ps) next)))
                   (if (gfail? v)
                     (values v input)
-                    (loop (cdr ps) (cons v res) ne)))))))
+                    (loop (cdr ps) (cons v res) ne))))))
+
+      (define (glist-f . parsers)
+        (lambda (input)
+          (%glist input parsers)))
+
+      (define-syntax glist
+         (syntax-rules ()
+            ((_ in ...)
+             (lambda (input)
+               (%glist input (list in ...))))))
 
       (define (glist-of parser)
         (lambda (input)
@@ -105,13 +123,19 @@
                  (values (reverse res) ne)
                  (loop ne (cons v res)))))))
 
-      (define (gpair parser1 parser2)
-        (lambda (input)
-          (let-values (((x next1) (parser1 input)))
-            (if (gfail? x)
-              (values x input)
-              (let-values (((y next2) (parser2 next1)))
-                  (if (gfail? y)
-                    (values y input)
-                    (values (cons x y) next2)))))))
+
+      (define (gpair% input parser1 parser2)
+        (let-values (((x next1) (parser1 input)))
+          (if (gfail? x)
+            (values x input)
+            (let-values (((y next2) (parser2 next1)))
+                (if (gfail? y)
+                  (values y input)
+                  (values (cons x y) next2))))))
+
+      (define-syntax gpair
+        (syntax-rules ()
+          ((_ parser1 parser2)
+           (lambda (input)
+             (gpair% input parser1 parser2)))))
       ))

@@ -44,7 +44,7 @@
 
 (begin;glist-test
   (test-begin "glist-test")
-  (let ((parser (apply glist
+  (let ((parser (apply glist-f
                        (map gchar
                             (string->list "test")))))
     (let-values (((v next) (parser "test!")))
