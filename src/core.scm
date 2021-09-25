@@ -1,7 +1,7 @@
 (define-library (gorgos core)
    (import (scheme base) (scheme charset))
    (export gfail? gchar gnot-char gor glist glist-f glist-of goptional gpair
-           make-gfail-object gfail g-error-explain
+           gany-char make-gfail-object gfail gerror-explain
            gfail-internal gfirst-char)
    (begin
       (define-record-type <gfail>
@@ -27,6 +27,9 @@
 
       (define *state* (make-parameter #f))
 
+      (define (%gapply parser input)
+        (parser input))
+
       (define (gfirst-char parser)
         (parameterize ((*state* 'check-first-char))
           (let-values (((err rest) (parser "")))
@@ -44,7 +47,7 @@
              (loop (+ i 1) (+ line 1) 0))
             (else (loop (+ i 1) line (+ col 1))))))
 
-      (define (g-error-explain gfail . input-opt)
+      (define (gerror-explain gfail . input-opt)
         (let ((reason (and (gfail? gfail)
                            (greason? (%gfail-reason gfail))
                            (%gfail-reason gfail)))
@@ -61,7 +64,8 @@
                   (explain ,(case (greason-type reason)
                                   ((no-input) "No input.")
                                   ((no-match) "No match.")
-                                  (else #f)))))
+                                  (else #f)))
+                  (rest ,rest)))
             #f)))
 
       (define (gchar c)
@@ -74,6 +78,14 @@
                 (if (char=? rchar c)
                     (values c (substring input 1 (string-length input)))
                     (values (gfail-internal 'g-unmatch input) input)))))))
+
+      (define (gany-char input)
+        (lambda (input)
+          (cond
+            ((eq? (*state*) 'check-first-char) (values (gfail-first-char 'any) ""))
+            ((zero? (string-length input)) (values (gfail-internal 'no-input "")  input))
+            (else (values (string-ref input 0)
+                          (substring input 1 (string-length input)))))))
 
       (define (gnot-char c);;untested
         (lambda (input)
@@ -147,18 +159,17 @@
 
       (define (glist-of parser)
         (lambda (input)
-          (let loop ((next input)(res '()))
+          (let loop ((next input) (res '()))
             (let-values (((v ne) (parser next)))
                (if (gfail? v)
                  (values (reverse res) ne)
                  (loop ne (cons v res)))))))
 
-
       (define (gpair% input parser1 parser2)
-        (let-values (((x next1) (parser1 input)))
+        (let-values (((x next1) (%gapply parser1 input)))
           (if (gfail? x)
             (values x input)
-            (let-values (((y next2) (parser2 next1)))
+            (let-values (((y next2) (%gapply parser2 next1)))
                 (if (gfail? y)
                   (values y input)
                   (values (cons x y) next2))))))
@@ -167,4 +178,11 @@
         (syntax-rules ()
           ((_ parser1 parser2)
            (lambda (input)
-             (gpair% input parser1 parser2)))))))
+             (gpair% input parser1 parser2)))))
+
+      (define-syntax gnot
+        (syntax-rules ()
+          ((_ parser)
+           (lambda (input)
+             (%not-parser input parser)))))
+      ))
