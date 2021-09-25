@@ -1,4 +1,4 @@
-(include "../src/gorgos-core.scm")
+(include "../src/core.scm")
 (include "../src/gorgos-charset.scm")
 
 (import (scheme base)

@@ -1,4 +1,4 @@
-(include "../src/gorgos-core.scm")
+(include "../src/core.scm")
 
 (import (scheme base)
         (srfi 64)

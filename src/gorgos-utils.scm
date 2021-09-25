@@ -21,5 +21,4 @@
     (define (gconv parser proc)
       (gwrap (v next)
          parser
-         (proc v)))
-     ))
+         (proc v)))))
