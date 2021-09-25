@@ -1,8 +1,8 @@
 (define-library (gorgos core)
-   (import (scheme base))
+   (import (scheme base) (scheme charset))
    (export gfail? gchar gnot-char gor glist glist-f glist-of goptional gpair
            make-gfail-object gfail g-error-explain
-           gfail-internal)
+           gfail-internal gfirst-char)
    (begin
       (define-record-type <gfail>
         (make-gfail-object reason)
@@ -10,18 +10,29 @@
         (reason %gfail-reason))
 
       (define-record-type <greason>
-        (make-greason type rest)
+        (make-greason type rest first-char)
         greason?
         (type greason-type)
-        (rest greason-rest))
+        (rest greason-rest)
+        (first-char greason-first-char))
 
       (define (gfail-internal type rest)
-        (make-gfail-object (make-greason type rest)))
+        (make-gfail-object (make-greason type rest #f)))
+
+      (define (gfail-first-char chr)
+        (make-gfail-object (make-greason 'check-first-char "" chr)))
 
       (define *gfail-object* (make-gfail-object #f))
       (define gfail *gfail-object*)
 
-      (define (g-parser-explain parser))
+      (define *state* (make-parameter #f))
+
+      (define (gfirst-char parser)
+        (parameterize ((*state* 'check-first-char))
+          (let-values (((err rest) (parser "")))
+            (and (gfail? err)
+                 (%gfail-reason err)
+                 (greason-first-char (%gfail-reason err))))))
 
       (define (%calc-string-position input)
         (let loop ((i 0)
@@ -55,12 +66,14 @@
 
       (define (gchar c)
         (lambda (input)
-          (if (zero? (string-length input))
-            (values (gfail-internal 'no-input "")  input)
-            (let ((rchar (string-ref input 0)))
-              (if (char=? rchar c)
-                  (values c (substring input 1 (string-length input)))
-                  (values (gfail-internal 'g-unmatch input) input))))))
+          (cond
+            ((eq? (*state*) 'check-first-char) (values (gfail-first-char c) ""))
+            ((zero? (string-length input)) (values (gfail-internal 'no-input "")  input))
+            (else
+              (let ((rchar (string-ref input 0)))
+                (if (char=? rchar c)
+                    (values c (substring input 1 (string-length input)))
+                    (values (gfail-internal 'g-unmatch input) input)))))))
 
       (define (gnot-char c);;untested
         (lambda (input)
@@ -87,12 +100,29 @@
                   (loop (cdr ps))
                   (values v ne))))))
 
+      (define (%gor-first-char parsers)
+        (let loop ((ps parsers)
+                   (res (char-set)))
+          (if (null? ps)
+            (gfail-first-char res)
+            (let ((fc (gfirst-char (car ps))))
+              (cond
+                ((char? fc)
+                 (loop (cdr ps)
+                       (char-set-adjoin res fc)))
+                (else
+                  (loop (cdr ps)
+                        (char-set-union res fc))))))))
+
       (define-syntax gor
         (syntax-rules ()
           ((_ _parsers ...)
             (lambda (input)
               (let ((parsers (list _parsers ...)))
-                (%gor input parsers))))))
+                (cond
+                  ((eq? (*state*) 'check-first-char)
+                   (values (%gor-first-char parsers) ""))
+                  (else (%gor input parsers))))))))
 
       (define (%glist input parsers)
           (let loop ((ps parsers)
@@ -137,5 +167,4 @@
         (syntax-rules ()
           ((_ parser1 parser2)
            (lambda (input)
-             (gpair% input parser1 parser2)))))
-      ))
+             (gpair% input parser1 parser2)))))))
